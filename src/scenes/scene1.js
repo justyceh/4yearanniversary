@@ -43,7 +43,7 @@ export default class scene1 extends Phaser.Scene {
       if (this.nearNpc) {
         let response = "";
         this.npc.sprite.setFrame(2);
-        this.npc.sprite.refreshBody();
+        
         this.startNpcConversation();
       }
     });
@@ -64,14 +64,15 @@ export default class scene1 extends Phaser.Scene {
       this.input.keyboard.removeAllListeners("keydown-A");
       this.input.keyboard.removeAllListeners("keydown-B");
       this.quest.show();
-        this.input.keyboard.once("keydown-A", () => this.handleChoice("A", this.quest));
-        this.input.keyboard.once("keydown-B", () => this.handleChoice("B", this.quest));
+      this.input.keyboard.once("keydown-A", () => this.handleChoice("A", this.quest));
+      this.input.keyboard.once("keydown-B", () => this.handleChoice("B", this.quest));
      }
      
      handleChoice(key, currentQuest) {
-    this.input.keyboard.removeAllListeners("keydown-A");
-    this.input.keyboard.removeAllListeners("keydown-B");
-    this.input.keyboard.removeAllListeners("keydown-X");
+
+      this.input.keyboard.removeAllListeners("keydown-A");
+      this.input.keyboard.removeAllListeners("keydown-B");
+      this.input.keyboard.removeAllListeners("keydown-X");
       let result = currentQuest.getResponse(key);
       currentQuest.hide();
       let followUpText = key === "A" ? currentQuest.getResponse("A") : currentQuest.getResponse("B");
