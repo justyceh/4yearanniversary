@@ -8,7 +8,7 @@ export default class Player {
         this.y = y;
         this.sprite = scene.physics.add.sprite(x, y, texture);
         this.sprite.setCollideWorldBounds(true);
-        this.speed = 150;
+        this.speed = 110;
         this.createAnimations();
     }
 

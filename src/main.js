@@ -3,9 +3,9 @@ import scene1 from "./scenes/scene1";
 
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
-  backgroundColor: "#1d1d1d",
+  width: 1250,
+  height: 650,
+  backgroundColor: "#ffffff",
   physics: {
     default: "arcade",
     arcade: {
