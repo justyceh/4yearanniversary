@@ -1,70 +1,80 @@
 import Phaser from "phaser";
 
 export default class Player {
-  constructor(scene, x, y, texture) {
+    constructor(scene, x, y, texture) {
+        this.scene = scene;
+        this.texture = texture;
+        this.x = x;
+        this.y = y;
+        this.sprite = scene.physics.add.sprite(x, y, texture);
+        this.sprite.setCollideWorldBounds(true);
+        this.speed = 150;
+        this.createAnimations();
+    }
 
-    this.sprite = scene.physics.add.sprite(x, y, texture);
+    createAnimations() {
+        if (this.scene.anims.get("walk-up")) return;
+        this.scene.anims.create({
+          key: "walk-up",
+          frames: this.scene.anims.generateFrameNumbers(this.texture, { start: 0, end: 8 }),
+          frameRate: 10,
+          repeat: -1
+        });
 
-    this.sprite.setCollideWorldBounds(true);
-    this.speed = 200;
-    this.sprite.body.setSize(64,64);
+        this.scene.anims.create({
+          key: "walk-left",
+          frames: this.scene.anims.generateFrameNumbers(this.texture, { start: 9, end: 17 }),
+          frameRate: 10,
+          repeat: -1
+        });
 
-    this.createAnimations(scene);
+        this.scene.anims.create({
+          key: "walk-down",
+          frames: this.scene.anims.generateFrameNumbers(this.texture, { start: 18, end: 26 }),
+          frameRate: 10,
+          repeat: -1
+        });
 
+        this.scene.anims.create({
+          key: "walk-right",
+          frames: this.scene.anims.generateFrameNumbers(this.texture, { start: 27, end: 35 }),
+          frameRate: 10,
+          repeat: -1
+        });
+    }
 
-  }
+    update(cursors) {
+    // stop moving first
+    this.sprite.setVelocity(0);
 
-  createAnimations(scene) {
-    // Prevent duplicate creation if scene restarts
-    if (scene.anims.get("walk-up")) return;
+    // Horizontal movement
+    if (cursors.left.isDown) {
+      this.sprite.setVelocityX(-160);
+      this.sprite.anims.play("walk-left", true);
+    }
+    else if (cursors.right.isDown) {
+      this.sprite.setVelocityX(160);
+      this.sprite.anims.play("walk-right", true);
+    }
 
-    scene.anims.create({
-      key: "walk-up",
-      frames: scene.anims.generateFrameNumbers("player", { start: 0, end: 8 }),
-      frameRate: 10,
-      repeat: -1
-    });
+    // Vertical movement
+    if (cursors.up.isDown) {
+      this.sprite.setVelocityY(-160);
+      this.sprite.anims.play("walk-up", true);
+    }
+    else if (cursors.down.isDown) {
+      this.sprite.setVelocityY(160);
+      this.sprite.anims.play("walk-down", true);
+    }
 
-    scene.anims.create({
-      key: "walk-left",
-      frames: scene.anims.generateFrameNumbers("player", { start: 9, end: 17 }),
-      frameRate: 10,
-      repeat: -1
-    });
-
-    scene.anims.create({
-      key: "walk-down",
-      frames: scene.anims.generateFrameNumbers("player", { start: 18, end: 26 }),
-      frameRate: 10,
-      repeat: -1
-    });
-
-    scene.anims.create({
-      key: "walk-right",
-      frames: scene.anims.generateFrameNumbers("player", { start: 27, end: 35 }),
-      frameRate: 10,
-      repeat: -1
-    });
-  }
-
-  update(cursors) {
-    const sprite = this.sprite;
-
-    let vx = 0;
-    let vy = 0;
-
-    if (cursors.left.isDown) vx = -this.speed;
-    else if (cursors.right.isDown) vx = this.speed;
-
-    if (cursors.up.isDown) vy = -this.speed;
-    else if (cursors.down.isDown) vy = this.speed;
-
-    sprite.setVelocity(vx, vy);
-
-    if (vx < 0) sprite.anims.play("walk-left", true);
-    else if (vx > 0) sprite.anims.play("walk-right", true);
-    else if (vy < 0) sprite.anims.play("walk-up", true);
-    else if (vy > 0) sprite.anims.play("walk-down", true);
-    else sprite.anims.stop();
+    // Idle
+    if (
+      !cursors.left.isDown &&
+      !cursors.right.isDown &&
+      !cursors.up.isDown &&
+      !cursors.down.isDown
+    ) {
+      this.sprite.anims.stop();
+    }
   }
 }
