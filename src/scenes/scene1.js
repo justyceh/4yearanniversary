@@ -6,6 +6,7 @@ import mcqueenImage from "../assets/mcqueen.png";
 import groundImage from "../assets/redblock.png";
 import Npc from "../objects/Npc";
 import npcSpriteSheet from "../assets/idle.png";
+import { Dialogue } from "../objects/Dialogue";
 
 export default class scene1 extends Phaser.Scene {
   constructor() {
@@ -27,25 +28,12 @@ export default class scene1 extends Phaser.Scene {
   }
 
   create() {
-    this.dialogueBox = this.add.rectangle(800, 550, 600, 150, 0x000000, 0.8);
-    this.dialogueText = this.add.text(620, 500, "", {
-    fontSize: "20px",
-    color: "#ffffff",
-    wordWrap: { width: 400 }
-    });
-
-// Hide at start
-    this.dialogueBox.setVisible(false);
-    this.dialogueText.setVisible(false);
-    this.dialogueBox.setDepth(1000);
-    this.dialogueText.setDepth(1001);
-
+    this.quest = new Dialogue(this, "Are you following me?", ["Yes", "No"], "I knew it! But it's fine cause your cute and I love you!", "Wow you cant admit it even 4 years later huh? But it's fine cause your cute and I love you");
     this.nearNpc = false;
     this.cursors = this.input.keyboard.createCursorKeys();
     this.add.image(500, 200, "mcqueen");
     this.player = new Player(this, 100, 500, "player");
     this.npc = new Npc(this, 400, 500, "npc");
-    
     let topWall = this.add.zone(600, 375, 1200, 50);
     this.physics.add.existing(topWall, true);
     this.physics.add.collider(this.player.sprite, topWall);
@@ -53,82 +41,62 @@ export default class scene1 extends Phaser.Scene {
 
     this.input.keyboard.on("keydown-E", () => {
       if (this.nearNpc) {
+        let response = "";
         this.npc.sprite.setFrame(2);
         this.npc.sprite.refreshBody();
-         this.showDialogue("Hey! Are you following me?", ["Yes", "No"]);
+        this.startNpcConversation();
       }
     });
   }
 
-  showDialogue(text, choices) {
-    // Create the dialogue box
-    this.dialogueBox.setVisible(true);
-    this.dialogueText.setVisible(true);
-
-    this.dialogueText.setText(
-        text + "\n\n" + `A) ${choices[0]}     B) ${choices[1]}`
-    );
-
-    // Add listeners for choices
-     this.input.keyboard.once("keydown-A", () => {
-     this.handleChoice(choices[0]);
-    });
-
-     this.input.keyboard.once("keydown-B", () => {
-     this.handleChoice(choices[1]);
-    });
-
-}
-
-showDialogue2(text) {
-    // Create the dialogue box
-    this.dialogueBox.setVisible(true);
-    this.dialogueText.setVisible(true);
-
-    this.dialogueText.setText(
-        text
-    );
-
-    // Add listeners for choices
-     this.input.keyboard.once("keydown-E", () => {
-     this.handleChoice("Close");
-    });
-
-     
-
-}
-
-handleChoice(choice) {
-    this.dialogueBox.setVisible(false);
-    this.dialogueText.setVisible(false);
-
-    console.log("Player chose:", choice);
-
-
-    if (choice === "Yes") {
-      this.showDialogue2("I knew it! It's okay though because your a cutie! Go click E on the door!");
-      return;
-    }
-    else if (choice === "No") {
-      this.showDialogue2("4 Years later and you still cant admit you were following me? Your so cute! Now go click E on the door!");
-    }
-    else{
-      // Do nothing
-    }
-
-    // You can trigger quests, dialogue, animations, etc. here
-}
-
-
-    update() {
-
-      const distance = Phaser.Math.Distance.Between(
+  update() {
+    const distance = Phaser.Math.Distance.Between(
       this.player.sprite.x,
       this.player.sprite.y,
       this.npc.sprite.x,
       this.npc.sprite.y
-    );
+      );
       this.nearNpc = distance < 50;
       this.player.update(this.cursors);
+     }
+
+     startNpcConversation() {
+      this.input.keyboard.removeAllListeners("keydown-A");
+      this.input.keyboard.removeAllListeners("keydown-B");
+      this.quest.show();
+        this.input.keyboard.once("keydown-A", () => this.handleChoice("A", this.quest));
+        this.input.keyboard.once("keydown-B", () => this.handleChoice("B", this.quest));
+     }
+     
+     handleChoice(key, currentQuest) {
+    this.input.keyboard.removeAllListeners("keydown-A");
+    this.input.keyboard.removeAllListeners("keydown-B");
+    this.input.keyboard.removeAllListeners("keydown-X");
+      let result = currentQuest.getResponse(key);
+      currentQuest.hide();
+      let followUpText = key === "A" ? currentQuest.getResponse("A") : currentQuest.getResponse("B");
+
+      this.afterQuest = new Dialogue(this, followUpText, ["What are you doing here?", "What's going on?"], "Surpise!!! It's our 4 year anniversary! Now go walk into those school doors sweetie!", "Surpise!!! Happy 4 years my love, your so amazing so I know u can beat this game, go up to the doors!");
+      this.afterQuest.show();
+
+      this.input.keyboard.once("keydown-A", () => this.handleChoice2("A", this.afterQuest));
+      this.input.keyboard.once("keydown-B", () => this.handleChoice2("B", this.afterQuest));
+
+      this.input.keyboard.once("keydown-X", () => {
+      this.afterQuest.hide();
+    });
+
+     }
+     handleChoice2(key, currentQuest) {
+      let result = currentQuest.getResponse(key);
+      currentQuest.hide();
+      let followUpText = key === "A" ? currentQuest.getResponse("A") : currentQuest.getResponse("B");
+
+      this.afterQuest = new Dialogue(this, followUpText, ["Okay Bye!!!"], "Surpise!!! It's our 4 year anniversary! Now go walk into those school doors sweetie!", "Surpise!!! Happy 4 years my love, your so amazing so I know u can beat this game, go up to the doors!");
+      this.afterQuest.show();
+      this.input.keyboard.once("keydown-X", () => {
+      this.afterQuest.hide();
+    });
+
      }
 }
